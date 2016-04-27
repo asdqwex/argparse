@@ -30,9 +30,16 @@ class Argparser
 end
 
 class Program
+
+	@@arguments = {}
+	@@exclusion_weight = 0
+
 	def initialize(pasable_command_object)
 		pasable_command_object.each do |command_name, command_data|
-			if Program.method_defined? command_name
+			#increment @@exclusion_weight for every class variable name that includes exclusive
+		end
+		pasable_command_object.each do |command_name, command_data|
+			if Program.method_defined?(command_name) && @@exclusion_weight < 2
 				self.method(command_name).call(command_data)
 			else
 				puts 'invalid command'
@@ -40,7 +47,6 @@ class Program
 		end
 	end
 
-	@@arguments = {}
 	def whiches(key_argument)
 		puts 'whiches called with ' + key_argument
 		@@key_argument = key_argument
@@ -52,11 +58,13 @@ class Program
 		@@arguments[@@key_argument] = value_argument	
 	end
 
+	@@match_exclusive = 1
 	def match(argument_object)
 		puts 'match was run expecting argument1 => we'
 		puts 'got ', @@arguments
 	end
 
+	@@unmatch_exclusive = 1
 	def unmatch(argument_object)
 		puts 'unmatch was run expecting argument2 => them'
 		puts 'got ', @@arguments
