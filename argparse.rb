@@ -9,6 +9,7 @@ command = ARGV.to_s
 
 class Argparser
 	def parse(command)
+		@@counter = 0
 		command_object = {}
 		command_parts = command.split
 		command_parts.each_with_index do |part, index|
@@ -25,7 +26,17 @@ class Argparser
 				command_object[part.delete('-"][,')] = {}
 			end
 		end
-		return command_object
+		command_object.each do |key, value|
+			if value == {}
+				@@counter += 1
+			end
+		end
+		if @@counter > 1
+			puts 'too many options'
+			return
+		else
+			return command_object
+		end
 	end
 end
 
@@ -34,11 +45,15 @@ class Program
 	@@arguments = {}
 
 	def initialize(pasable_command_object)
-		pasable_command_object.each do |command_name, command_data|
-			if Program.method_defined?(command_name) && @@exclusion_weight < 2
-				self.method(command_name).call(command_data)
-			else
-				puts 'invalid command'
+		if pasable_command_object.nil?
+			puts 'no valid command to run'
+		else
+			pasable_command_object.each do |command_name, command_data|
+				if Program.method_defined?(command_name)
+					self.method(command_name).call(command_data)
+				else
+					puts 'invalid command'
+				end
 			end
 		end
 	end
@@ -55,12 +70,12 @@ class Program
 	end
 
 	def match(argument_object)
-		puts 'match was run expecting argument1 => we'
+		puts 'match was run, expecting argument1 => we'
 		puts 'got ', @@arguments
 	end
 
 	def unmatch(argument_object)
-		puts 'unmatch was run expecting argument2 => them'
+		puts 'unmatch was run, expecting argument2 => them'
 		puts 'got ', @@arguments
 	end
 end 
@@ -69,6 +84,6 @@ parser = Argparser.new
 
 pasable_command_object = parser.parse(command)
 
-puts pasable_command_object
+# puts pasable_command_object
 
 run_program = Program.new(pasable_command_object)
