@@ -5,22 +5,32 @@
 #
 ############################################################
 
-command = ARGV.to_s
-
+# Define Argparser class
 class Argparser
+	# Define parse method
 	def parse(command)
-		@@counter = 0
+		# initialize action_counter
+		@@action_counter = 0
+		# initialize command_object , will be used to store commands and options
 		command_object = {}
+		# split the command string into parts on whitespace
 		command_parts = command.split
+		# for each part of teh commadn string
 		command_parts.each_with_index do |part, index|
+			# check to see if the command part includes and - or =
 			if part.include?('-') && part.include?('=')
+				# Split the command part on =
 				sub_parts = part.split('=')
+				# set command key to the string beofore the = and remove funny characters
 				command_key = sub_parts[0].delete('-"][,')
+				# set command valur to the string after the = and remove funny characters
 				command_value = sub_parts[1].delete('-"][,')
+				# add command_key to the command_object with command_value as the value
 				command_object[command_key]	= command_value
-			elsif part.include?('-')
+			# check to see if the command part has a - in it (this might be an edge case; arg=someting-something)
+			elsif part.match(/^--/) || part.match(/^-/) 
 				command_key = part.delete('-"[,')
-				command_value = command_parts.slice!(index+=1).delete('-"][,')
+				command_value = command_parts.slice!(index+=1)
 				command_object[command_key]	= command_value
 			else
 				command_object[part.delete('-"][,')] = {}
@@ -28,10 +38,11 @@ class Argparser
 		end
 		command_object.each do |key, value|
 			if value == {}
-				@@counter += 1
+				@@action_counter += 1
 			end
 		end
-		if @@counter > 1
+		puts command_object
+		if @@action_counter > 1
 			puts 'too many options'
 			return
 		else
@@ -78,12 +89,10 @@ class Program
 		puts 'unmatch was run, expecting argument2 => them'
 		puts 'got ', @@arguments
 	end
-end 
+end
+
+command = ARGV.to_s
 
 parser = Argparser.new
 
-pasable_command_object = parser.parse(command)
-
-# puts pasable_command_object
-
-run_program = Program.new(pasable_command_object)
+run_program = Program.new(parser.parse(command))
